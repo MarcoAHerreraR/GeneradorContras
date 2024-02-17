@@ -1,8 +1,7 @@
 import 'dart:math';
-//import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'variables.dart' as globales;
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Contras',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 231, 231, 231)),
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'prueba de generar contras'),
@@ -34,33 +33,30 @@ class MyHomePage extends StatefulWidget {
 }
 
 String contragenerador({
-  bool conletras = true,
-  bool connumeros = true,
-  bool conespecial = true,
-}) {
-  const tamano = 10;
-  const mayus = "ABCDEFGHIJKLMNOPQRSTWYXZ";
-  const minus = "abcdefghijklmnopqrstwyxz";
-  const numeros = "1234567890";
-  const especial = "!#&/()=?¡";
+  bool connumeros = false,
+  bool conespecial = false,
+}){
 
   String contra= "";
-  if (conletras) contra += mayus + minus;
-  if (connumeros) contra+= numeros;
-  if (conespecial) contra+= especial;
+  if (globales.conletras) contra += globales.mayus + globales.minus;
+  if (globales.connumeros) contra+= globales.numeros;
+  if (globales.conespecial) contra+= globales.especial;
 
-  return List.generate(tamano, (index) {
-    final listarandome = Random.secure().nextInt(tamano);
+  return List.generate(globales.tamano, (index) {
+    final listarandome = Random.secure().nextInt(contra.length);
     return contra[listarandome];
   }).join("");
 }
 
 class _MyHomePageState extends State<MyHomePage> {
   final control = TextEditingController();
+  final control1 = TextEditingController();
+  bool swich = false; 
 
   @override
   void dispose() {
     control.dispose();
+    control1.dispose();
     super.dispose();
   }
 
@@ -71,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
     body: Container(
       padding: const EdgeInsets.all(32),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           const Text('Generados de contraseñas aleatorias',style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -87,9 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 final datos = ClipboardData(text: control.text);
                 Clipboard.setData(datos);
-
                 const barra = SnackBar (content: Text("Contraseña copiada",style: TextStyle(fontWeight: FontWeight.bold),));
-
                 ScaffoldMessenger.of(context)
                   ..removeCurrentSnackBar()
                   ..showSnackBar(barra);
@@ -98,18 +92,54 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           const SizedBox(height: 12),
           construirboton(),
+          if (globales.palabraespecial) TextField(
+            controller: control1,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(
+            height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Text('Agregar numeros'),
+              Switch(value: globales.connumeros, onChanged: (value) {setState(() {
+             globales.connumeros = value;
+          });}),
+            ],
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Text('Agregar Caracteres especiales'),
+              Switch(value: globales.conespecial, onChanged: (value) {setState(() {
+             globales.conespecial = value;
+          });}),
+            ],
+          ),Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Text('Agregar palabra especial'),
+              Switch(value: globales.palabraespecial, onChanged: (value) {setState(() {
+             globales.palabraespecial = value;
+          });}),
+            ],
+          ),
+            
         ],
       ),
     ),
   );
 
   Widget construirboton() {
-    final  colordefondo = MaterialStateColor.resolveWith((states) => states.contains(MaterialState.pressed)? Colors.lightGreen : Colors.green);
+    final  colordefondo = MaterialStateColor.resolveWith((states) => states.contains(MaterialState.pressed)? const Color.fromARGB(255, 4, 133, 0) : const Color.fromARGB(255, 63, 194, 68));
     return ElevatedButton(
       style: ButtonStyle(backgroundColor: colordefondo),
       onPressed:(){
-      final contra = contragenerador();
+      var contra = contragenerador();
+      if (globales.palabraespecial) contra = control1.text + contragenerador();
       control.text = contra;
-    } , child: const Text("Generar contraseña"));
+    } , child: const Text("Generar contraseña", style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),));
   }
 }
